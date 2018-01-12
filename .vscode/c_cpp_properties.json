@@ -1,0 +1,19 @@
+{
+    "version": 3,
+    "configurations": [ 
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include",
+                "/usr/include/sys",
+                "/usr/local/include",
+                "/usr/include/boost",
+                "/usr/include/c++/4.8.2/",
+                "/usr/include/c++/4.8.2/x86_64-redhat-linux/",
+                "/usr/lib/gcc/x86_64-redhat-linux/4.8.2/include/",
+                "${workspaceRoot}"
+            ],
+            "intelliSenseMode": "clang-x64"
+        }
+    ]
+}
