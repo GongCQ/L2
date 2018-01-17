@@ -330,28 +330,29 @@ void OrderStream::Init(Symbol symbol, const string &path){
 }
 
 Order OrderStream::StrToOrder(const string &str){
-    vector<string> infoVec;
-    split(infoVec, str, is_any_of(","));
-    if(infoVec.size() != 8){
-        logFile.WriteLog("unknown", "ERROR", "got an unknown order string [" + str + "]");
-        return Order(INVALID_SYMBOL, MIN_TIME);
+    char* last = nullptr;
+    char* pArr[8];
+    char* p = strtok_r((char*)(str.data()), ",", &last);
+    int c = 0;
+    while (p != NULL){
+        pArr[c] = p;
+        p = strtok_r(NULL, ",", &last);
+        c++;
+        if (c > 7){
+            break;
+        }
     }
-    else{
-        const string dtStr = infoVec[0].substr(0, 4) + "-" + 
-                             infoVec[0].substr(4, 2) + "-" + 
-                             infoVec[0].substr(6, 2) + " " +
-                             infoVec[1];
-        tm dtTm = to_tm(time_from_string(dtStr));
-        time_t dt = mktime(&dtTm);
-        int channel = lexical_cast<int>(infoVec[2]);
-        OrderSeq seq = lexical_cast<OrderSeq>(infoVec[3]);
-        float price = lexical_cast<double>(infoVec[4]);
-        unsigned int num = lexical_cast<unsigned int>(infoVec[5]);
-        char direct = infoVec[6][0];
-        char type = infoVec[7][0];
-        Order order(symbol, dt, channel, seq, price, num, direct, type);
-        return order;
-    }
+    const string dtStr = str.substr(0, 4) + "-" + str.substr(4, 2) + "-" + str.substr(6, 2) + " " + string(pArr[1]);
+    tm dtTm = to_tm(time_from_string(dtStr));
+    time_t dt = mktime(&dtTm);
+    int channel = atoi(pArr[2]);
+    OrderSeq seq = atoi(pArr[3]);
+    float price = atof(pArr[4]);
+    int num = atoi(pArr[5]);;
+    char direct = pArr[6][0];
+    char type = pArr[7][0];
+    Order order(symbol, dt, channel, seq, price, num, direct, type);
+    return order;
 }
 
 bool OrderStream::GetOrder(Order& order){
@@ -386,32 +387,32 @@ void TransStream::Init(Symbol symbol, const string &path){
 }
 
 Trans TransStream::StrToTrans(const string &str){
-    vector<string> infoVec;
-    split(infoVec, str, is_any_of(","));
-    if(infoVec.size() != 9){
-        logFile.WriteLog("unknown", "ERROR", "got an unknown trans string [" + str + "]");
-        return Trans(INVALID_SYMBOL, MIN_TIME);
-    }
-    else{
-        const string dtStr = infoVec[0].substr(0, 4) + "-" + 
-                             infoVec[0].substr(4, 2) + "-" + 
-                             infoVec[0].substr(6, 2) + " " +
-                             infoVec[1];
-        tm dtTm = to_tm(time_from_string(dtStr));
-        time_t dt = mktime(&dtTm);
-        int channel = lexical_cast<int>(infoVec[2]);
-        TransSeq seq = lexical_cast<TransSeq>(infoVec[3]);
-        OrderSeq bidSeq = lexical_cast<OrderSeq>(infoVec[4]);
-        OrderSeq offerSeq = lexical_cast<OrderSeq>(infoVec[5]);
-        float price = lexical_cast<float>(infoVec[6]);
-        unsigned int num = lexical_cast<unsigned int>(infoVec[7]);
-        char type = infoVec[8][0];
-        if(type == 'B' || type == 'S'){ // for shanghai
-            type = 'F';
+    char* last = nullptr;
+    char* pArr[9];
+    char* p = strtok_r((char*)(str.data()), ",", &last);
+    int c = 0;
+    while (p != NULL){
+        pArr[c] = p;
+        p = strtok_r(NULL, ",", &last);
+        c++;
+        if (c > 8){
+            break;
         }
-        Trans trans(symbol, dt, channel, seq, bidSeq, offerSeq, price, num, type);
-        return trans; 
-    }
+    }    
+    const string dtStr = str.substr(0, 4) + "-" + str.substr(4, 2) + "-" + str.substr(6, 2) + " " + string(pArr[1]);
+    tm dtTm = to_tm(time_from_string(dtStr));
+    time_t dt = mktime(&dtTm);
+    int channel = atoi(pArr[2]);
+    long seq = atoi(pArr[3]);
+    long bidSeq = atoi(pArr[4]);
+    long offerSeq = atoi(pArr[5]);
+    float price = atof(pArr[6]);
+    int num = atoi(pArr[7]);
+    char type = pArr[8][0];
+    if (type == 'B' || type == 'S') //此为上交所成交信息
+        type = 'F';
+    Trans trans(symbol, dt, channel, seq, bidSeq, offerSeq, price, num, type);
+    return trans;
 }
 
 bool TransStream::GetTrans(Trans& trans){
@@ -552,7 +553,7 @@ void OrderDeque::LocFirst(){
 }
 
 bool OrderDeque::GetEach(Order& order){
-    while(loc < maxPrice - minPrice + 1){
+    while(basePrice != INVALID_PRICE && loc < maxPrice - minPrice + 1){
         if (priceVec.at(loc).GetEach(order)){
             return true;
         }

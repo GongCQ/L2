@@ -21,6 +21,4 @@ const string LAUNCH_TIME_STR = to_iso_string(LAUNCH_TIME);
 const unsigned int DAY_SECONDS = 86400;
 const unsigned int HOUR_SECONDS = 3600;
 const unsigned int MINUTE_SECONDS = 60;
-const unsigned int CHANNEL_NUM = 4;
-const unsigned int BAR_INTERVEL = 300;
 Log logFile("./log/"); 

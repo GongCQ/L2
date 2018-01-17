@@ -25,6 +25,4 @@ extern const string LAUNCH_TIME_STR;
 extern const unsigned int DAY_SECONDS;
 extern const unsigned int HOUR_SECONDS;
 extern const unsigned int MINUTE_SECONDS;
-extern const unsigned int CHANNEL_NUM;
-extern const unsigned int BAR_INTERVEL;
 extern Log logFile; 
