@@ -16,6 +16,7 @@ protected:
     OrderDeque bidDeque;
     OrderDeque offerDeque;
     list<Trans> transList;
+    list<Order> orderList;
 
 public: 
     Stock(Symbol symbol);
@@ -28,6 +29,7 @@ public:
     void GetBidDeque(list<Order> &orderList);
     void GetOfferDeque(list<Order> &orderList);
     void GetTransList(list<Trans> &transList);
+    void GetOrderList(list<Order> &orderList);
 };
 
 class Market{
@@ -56,7 +58,7 @@ protected:
 public: 
     Market(string dataPath, string beginDateStr, string endDateStr, 
             set<Symbol> symbolSet, set<string> sourceSet, 
-            unsigned int barRange = 300, unsigned int channelNum = 1);
+            unsigned int barRange, unsigned int channelNum = 1);
     ~Market();
     void Launch();
     bool FetchDate();
@@ -65,11 +67,15 @@ public:
     void GetOrderDequeStr(Symbol symbol, string &bidStr, string &offerStr);
     void GetOrderDeque(Symbol symbol, list<Order> &bidDeque, list<Order> &offerDeque);
     void GetTransList(Symbol symbol, list<Trans> &transList);
+    void GetOrderList(Symbol symbol, list<Order> &orderList);
+    void GetSymbolList(list<Symbol> &symbolList);
+    Order GetOrder(OrderSeq seq);
     void AddOpenMon(BarMonitor mon);
     void AddBarMon(BarMonitor mon);
     void AddCloseMon(BarMonitor mon);
 
     static bool IsStock(const string &symbol);
     static void GetStockFile(const string pathStr, set<string> &fileNameSet);
+    static const string GetSymbolStr(const Symbol symbol);
 };
 

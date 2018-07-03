@@ -2,11 +2,13 @@
 #include <thread>
 #include <boost/date_time.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 using boost::lexical_cast;
 using namespace std;
 using namespace boost::posix_time;
 using namespace boost::gregorian; 
 using namespace boost::filesystem;
+using boost::format;
 
 // Stock --------------------------------------------------
 Stock::Stock(Symbol symbol): bidDeque(symbol, true), offerDeque(symbol, false){
@@ -15,9 +17,11 @@ Stock::Stock(Symbol symbol): bidDeque(symbol, true), offerDeque(symbol, false){
 
 Stock::~Stock(){
     transList.clear();
+    orderList.clear();
 }
 
 void Stock::AddOrder(Order &order){
+    orderList.push_back(order);
     const OrderInfo *orderInfo = order.GetInfo();
     if(orderInfo->direct == '1'){ // bid
         bidDeque.AddOrder(order);
@@ -36,6 +40,7 @@ void Stock::AddTrans(Trans trans){
 
 void Stock::ClearTrans(){
     transList.clear();
+    orderList.clear();
 }
 
 const string Stock::GetBidDequeStr(){
@@ -65,6 +70,12 @@ void Stock::GetOfferDeque(list<Order> &orderList){
 void Stock::GetTransList(list<Trans> &transList){
     for(list<Trans>::iterator ite = this->transList.begin(); ite != this->transList.end(); ite++){
         transList.push_back(*ite);
+    }
+}
+
+void Stock::GetOrderList(list<Order> &orderList){
+    for(list<Order>::iterator ite = this->orderList.begin(); ite != this->orderList.end(); ite++){
+        orderList.push_back(*ite);
     }
 }
 
@@ -166,7 +177,7 @@ bool Market::FetchTime(){
 
 const string Market::GetDateTimeStr(){ 
     tm *tempTm = localtime(&currentTime);
-    string str = to_simple_string(ptime_from_tm(*tempTm));
+    string str = to_iso_string(ptime_from_tm(*tempTm));
     return str;
 }
 
@@ -188,6 +199,27 @@ void Market::GetTransList(Symbol symbol, list<Trans> &transList){
     if(stocks[symbol] != nullptr){
         stocks[symbol]->GetTransList(transList);
     }
+}
+
+void Market::GetOrderList(Symbol symbol, list<Order> &orderList){
+    if(stocks[symbol] != nullptr){
+        stocks[symbol]->GetOrderList(orderList);
+    }
+}
+
+void Market::GetSymbolList(list<Symbol> &symbolList){ 
+    for(Symbol s = 0; s < MAX_SYMBOL; s++){
+        if(stocks[s] != nullptr){
+            symbolList.push_back(s); 
+        }
+    }
+}
+
+Order Market::GetOrder(OrderSeq seq){
+    if(seq >= MAX_ORDER_SEQ){
+        throw out_of_range("order seq exceed the max value.s");
+    }
+    return orders[seq];
 }
 
 void Market::AddOpenMon(BarMonitor mon){
@@ -383,6 +415,10 @@ bool Market::IsStock(const string &symbol){
 }
 
 void Market::GetStockFile(const string pathStr, set<string> &fileNameSet){ 
+    if(!exists(pathStr)){
+        cout<<"path does not exists "<<pathStr<<endl;
+        return;
+    }
     path director(pathStr);
     directory_iterator dirIteEnd;
 	for(directory_iterator dirIte(director); dirIte != dirIteEnd; dirIte++)	{
@@ -393,4 +429,10 @@ void Market::GetStockFile(const string pathStr, set<string> &fileNameSet){
             }
 		}
 	}
+}
+
+const string Market::GetSymbolStr(const Symbol symbol){
+    format fmt("%06d");
+    fmt%symbol;
+    return fmt.str();
 }

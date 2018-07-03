@@ -42,7 +42,7 @@ struct OrderInfo{
 		//转换为字符串
 		const string ToStr() const;
 
-		const OrderInfo *GetInfo();
+		const OrderInfo *GetInfo() const;
 
 		bool IsEmpty() const;
 		bool IsValid() const;
@@ -95,7 +95,7 @@ struct TransInfo{
 
 		const string ToStr() const;
 
-		const TransInfo *GetInfo();
+		const TransInfo *GetInfo() const;
 
 		bool IsEmpty();
 

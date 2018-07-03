@@ -187,10 +187,10 @@ void Order::Remove(){
 }
 
 const string Order::ToStr() const{
-    return info->ToStr();
+    return info == nullptr ? "[null order info pointer]" : info->ToStr();
 }
 
-const OrderInfo* Order::GetInfo(){
+const OrderInfo* Order::GetInfo() const{
     return info;
 }
 
@@ -299,10 +299,10 @@ Trans::~Trans(){
 }
 
 const string Trans::ToStr() const{
-    return info->ToStr();
+    return info == nullptr ? "[null trans info pointer]" : info->ToStr();
 }
 
-const TransInfo* Trans::GetInfo()	{
+const TransInfo* Trans::GetInfo() const {
     return info;
 }
 
@@ -331,26 +331,27 @@ void OrderStream::Init(Symbol symbol, const string &path){
 
 Order OrderStream::StrToOrder(const string &str){
     char* last = nullptr;
-    char* pArr[8];
+    char* pArr[11];
     char* p = strtok_r((char*)(str.data()), ",", &last);
     int c = 0;
     while (p != NULL){
         pArr[c] = p;
         p = strtok_r(NULL, ",", &last);
         c++;
-        if (c > 7){
-            break;
-        }
+        // if (c > 7){
+        //     break;
+        // }
     }
+    int swift = c > 9 ? 1 : 0;
     const string dtStr = str.substr(0, 4) + "-" + str.substr(4, 2) + "-" + str.substr(6, 2) + " " + string(pArr[1]);
     tm dtTm = to_tm(time_from_string(dtStr));
     time_t dt = mktime(&dtTm);
     int channel = atoi(pArr[2]);
     OrderSeq seq = atoi(pArr[3]);
-    float price = atof(pArr[4]);
-    int num = atoi(pArr[5]);;
-    char direct = pArr[6][0];
-    char type = pArr[7][0];
+    float price = atof(pArr[4 + swift]);
+    int num = atoi(pArr[5 + swift]);;
+    char direct = pArr[6 + swift][0];
+    char type = pArr[7 + swift][0];
     Order order(symbol, dt, channel, seq, price, num, direct, type);
     return order;
 }
@@ -388,27 +389,28 @@ void TransStream::Init(Symbol symbol, const string &path){
 
 Trans TransStream::StrToTrans(const string &str){
     char* last = nullptr;
-    char* pArr[9];
+    char* pArr[12];
     char* p = strtok_r((char*)(str.data()), ",", &last);
     int c = 0;
     while (p != NULL){
         pArr[c] = p;
         p = strtok_r(NULL, ",", &last);
         c++;
-        if (c > 8){
-            break;
-        }
+        // if (c > 8){
+        //     break;
+        // }
     }    
+    int swift = c > 10 ? 1 : 0;
     const string dtStr = str.substr(0, 4) + "-" + str.substr(4, 2) + "-" + str.substr(6, 2) + " " + string(pArr[1]);
     tm dtTm = to_tm(time_from_string(dtStr));
     time_t dt = mktime(&dtTm);
     int channel = atoi(pArr[2]);
     long seq = atoi(pArr[3]);
-    long bidSeq = atoi(pArr[4]);
-    long offerSeq = atoi(pArr[5]);
-    float price = atof(pArr[6]);
-    int num = atoi(pArr[7]);
-    char type = pArr[8][0];
+    long bidSeq = atoi(pArr[4 + swift]);
+    long offerSeq = atoi(pArr[5 + swift]);
+    float price = atof(pArr[6 + swift]);
+    int num = atoi(pArr[7 + swift]);
+    char type = pArr[8 + swift][0];
     if (type == 'B' || type == 'S') //此为上交所成交信息
         type = 'F';
     Trans trans(symbol, dt, channel, seq, bidSeq, offerSeq, price, num, type);
